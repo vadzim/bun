@@ -1940,7 +1940,7 @@ pub const VirtualMachine = struct {
                         const buster_name = name: {
                             if (std.fs.path.isAbsolute(normalized_specifier)) {
                                 if (std.fs.path.dirname(normalized_specifier)) |dir| {
-                                    // Normalized with trailing slash
+                                    // Normalized without trailing slash
                                     break :name bun.strings.normalizeSlashesOnly(&specifier_cache_resolver_buf, dir, std.fs.path.sep);
                                 }
                             }
@@ -1960,7 +1960,7 @@ pub const VirtualMachine = struct {
                         };
 
                         // Only re-query if we previously had something cached.
-                        if (jsc_vm.bundler.resolver.bustDirCache(buster_name)) {
+                        if (jsc_vm.bundler.resolver.bustDirCache(bun.strings.pathWithoutTrailingSlashOne(buster_name))) {
                             continue;
                         }
 
