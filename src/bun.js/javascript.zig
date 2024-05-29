@@ -190,8 +190,10 @@ pub const SavedSourceMap = struct {
     pub const MissingSourceMapNoteInfo = struct {
         pub var storage: bun.PathBuffer = undefined;
         pub var path: ?[]const u8 = null;
+        pub var seen_invalid = false;
 
         pub fn print() void {
+            if (seen_invalid) return;
             if (path) |note| {
                 Output.note(
                     "missing sourcemaps for {s}",
@@ -2206,9 +2208,11 @@ pub const VirtualMachine = struct {
             else => {
                 var errors_stack: [256]*anyopaque = undefined;
 
-                const errors = errors_stack[0..@min(log.msgs.items.len, errors_stack.len)];
+                const len = @min(log.msgs.items.len, errors_stack.len);
+                const errors = errors_stack[0..len];
+                const logs = log.msgs.items[0..len];
 
-                for (log.msgs.items, errors) |msg, *current| {
+                for (logs, errors) |msg, *current| {
                     current.* = switch (msg.metadata) {
                         .build => BuildMessage.create(globalThis, globalThis.allocator(), msg).asVoid(),
                         .resolve => ResolveMessage.create(
